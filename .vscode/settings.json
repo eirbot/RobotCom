@@ -2,5 +2,9 @@
     "terminal.integrated.env.linux": {
         "PATH": "/home/bcluzel/.platformio/penv/bin:/home/bcluzel/.platformio/penv:/home/bcluzel/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin",
         "PLATFORMIO_CALLER": "vscode"
+    },
+    "files.associations": {
+        "*.tpp": "cpp",
+        "*.tcc": "cpp"
     }
 }

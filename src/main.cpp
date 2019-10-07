@@ -2,7 +2,7 @@
 #include "ObjectDef.h"
 #include "mbed.h"
 
-//#define THEBRAIN
+#define THEBRAIN
 
 #ifdef THEBRAIN
     #include "RobotCom.h"
@@ -14,14 +14,21 @@ RobotComSlave rcom(IO_MACHINE,0,D14,D15);
 
 Serial pc(USBTX,USBRX);
 
-void write_processing(robot_com_frame data);
+void write_processing(robot_com_frame recived_data);
+void read_processing(robot_com_frame recived_data);
 void traitement();
 
 int main() {
 
     #ifdef THEBRAIN
     char data[NB_OCTET_TRAME];
+    char read_data[30];
     while(1) {
+        rcom.encode(data,READ,ANALOG,0,ANALOG_VALUE,ANALOG_NONE);
+        rcom.send(data,NB_OCTET_TRAME,rcom.compute_i2c_adress(IO_MACHINE,0));
+        rcom.read(read_data,1,rcom.compute_i2c_adress(IO_MACHINE,0));
+        pc.printf("Data recue : %d \n",read_data[0]);
+        wait_ms(100);
         rcom.encode(data,WRITE,DIGITAL,0,DIGITAL_VALUE,1);
         rcom.send(data,NB_OCTET_TRAME,rcom.compute_i2c_adress(IO_MACHINE,0));
         wait(1);
@@ -40,20 +47,21 @@ int main() {
     #endif
 }
 
+#ifndef THEBRAIN
 void traitement(){
-    robot_com_frame data = rcom.get_decoded_data();
-    switch (data.command)
+    robot_com_frame recived_data = rcom.get_decoded_data();
+    switch (recived_data.command)
     {
     case READ:
-        
+        read_processing(recived_data);
         break;
     case WRITE:
-        write_processing(data);
+        write_processing(recived_data);
         break;
-    case ACK:
+    case DONE:
         
         break;
-    case NO_ACK:
+    case NOT_IMPLEMENTED:
         
         break;
     case REBOOT:
@@ -67,16 +75,16 @@ void traitement(){
     }
 }
 
-void write_processing(robot_com_frame data){
+void write_processing(robot_com_frame recived_data){
     DigitalOut led(D13);
-    switch (data.object)
+    switch (recived_data.object)
     {
     case DEVICE:
         
         break;
     case DIGITAL:
 
-        led = data.data;
+        led = recived_data.data;
         break;
     case ANALOG:
         
@@ -92,3 +100,30 @@ void write_processing(robot_com_frame data){
         break;
     }
 }
+
+void read_processing(robot_com_frame recived_data){
+    const char data = 246;
+    switch (recived_data.object)
+    {
+    case DEVICE:
+        
+        break;
+    case DIGITAL:
+
+        break;
+    case ANALOG:
+        rcom.prepare_to_send(&data, 1);
+        break;
+    case RF:
+    
+        break;
+    case ASSERV:
+    
+        break;
+    
+    default:
+        break;
+    }
+}
+
+#endif

@@ -2,11 +2,16 @@
 #define DEF_OBJECTDEF
 
 
+
+#define NB_OCTET_TRAME 3
+#define I2CFREQ 100000
+
+
 enum commands {
     READ,
     WRITE,
-    ACK,
-    NO_ACK,
+    DONE,
+    NOT_IMPLEMENTED,
     REBOOT,
     DESACTIVATE
 };
@@ -67,5 +72,13 @@ struct robot_com_frame {
     unsigned char data;
 };
 
+struct float_concat {
+    union 
+    {
+        char byte[4];
+        float value;
+    };
+    
+};
 
 #endif
