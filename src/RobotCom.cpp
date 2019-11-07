@@ -18,8 +18,11 @@ RobotCom::~RobotCom()
 {
 }
 
-void RobotCom::read(char *data, int len, int address){
-    i2c.read(address,data,len);
+char RobotCom::read(char *data, int address){
+    char message_len;
+    i2c.read(address,&message_len,1);
+    i2c.read(address,data,message_len);
+    return message_len;
 }
 
 /* Faire un cast unsigned int sur command*/

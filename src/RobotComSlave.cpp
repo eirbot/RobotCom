@@ -20,8 +20,8 @@ RobotComSlave::~RobotComSlave()
 }
 
 void RobotComSlave::receive(){
-    char data[NB_OCTET_TRAME];
-    char output_data[30];
+    char header[NB_OCTET_HEADER];
+    char output_data[MAX_DATA_LEN+1];
     int nb_output_bytes;
     int read_error;
     int recive_state = slave.receive();
@@ -33,28 +33,20 @@ void RobotComSlave::receive(){
         break;
             
         case I2CSlave::WriteGeneral:
-            read_error = slave.read(data,NB_OCTET_TRAME);
+            read_error = slave.read(header,NB_OCTET_HEADER);
             if (!read_error)
             {
-                for(char i=0;i<NB_OCTET_TRAME;i++){
-                    buffer.push_back(data[i]); 
-                    // To much de mettre ca dans un buffer mais c'est pour etre plus flexible pour la suite
-                }
+                process_data_reception(header);
             }
-            process_data_reception();
+            
         break;
             
         case I2CSlave::WriteAddressed:
-            read_error = slave.read(data,NB_OCTET_TRAME);
+            read_error = slave.read(header,NB_OCTET_HEADER);
             if (!read_error)
             {
-                for(char i=0;i<NB_OCTET_TRAME;i++){
-                    buffer.push_back(data[i]); 
-                    // To much de mettre ca dans un buffer mais c'est pour etre plus flexible pour la suite
-                }
+                process_data_reception(header);
             }
-            process_data_reception();
-            
         break;
             
         case I2CSlave::NoData:
@@ -66,29 +58,18 @@ void RobotComSlave::receive(){
     }
 }
 
-char RobotComSlave::process_data_reception(){
+void RobotComSlave::process_data_reception(char *header){
+    struct robot_com_frame frame;
+    frame = decode_header(header);
+    slave.read(frame.data,frame.data_len);
+    set_decoded_data(frame);
 
-    if(buffer.size() >= NB_OCTET_TRAME){
-        char data[NB_OCTET_TRAME];
-        retrive_complete_tram_from_buffer(data);
-        decode(data);
-        return 1;
-    }else{
-        return 0;
-    }
 }
 
-void RobotComSlave::retrive_complete_tram_from_buffer(char *data){
-    for (unsigned int i = 0; i < NB_OCTET_TRAME; i++)
-    {
-        data[i] = buffer.front();
-        buffer.erase(buffer.begin());
-    }
-}
 
 int RobotComSlave::get_all_data_from_output_buffer(char *data){
-    int buffer_len = output_buffer.size();
-    for (unsigned int i = 0; i < buffer_len; i++)
+    size_t buffer_len = output_buffer.size();
+    for (size_t i = 0; i < buffer_len; i++)
     {
         data[i] = output_buffer.front();
         output_buffer.erase(output_buffer.begin());
@@ -96,14 +77,14 @@ int RobotComSlave::get_all_data_from_output_buffer(char *data){
     return buffer_len;
 }
 
-void RobotComSlave::decode(char *data){
+robot_com_frame RobotComSlave::decode_header(char *data){
     robot_com_frame data_frame;
     data_frame.command = data[0] >> 4;
     data_frame.object = data[0] & 0x0F;
     data_frame.object_id = data[1] >> 4;
     data_frame.property = data[1] & 0x0F;
-    data_frame.data = data[2];
-    set_decoded_data(data_frame);
+    data_frame.data_len = data[2];
+    return data_frame;
 }
 
 void RobotComSlave::send(const char *data, int data_len){
@@ -130,7 +111,16 @@ void RobotComSlave::set_decoded_data(robot_com_frame frame){
 }
 
 void RobotComSlave::prepare_to_send(const char *data, int data_len){
+    output_buffer.push_back((char)data_len);
     for(char i=0;i<data_len;i++){
         output_buffer.push_back(data[i]); 
     }
+}
+
+void RobotComSlave::prepare_to_send(int data){
+    prepare_to_send((const char *)&data,sizeof(data));
+}
+
+void RobotComSlave::prepare_to_send(float data){
+    prepare_to_send((const char *)&data,sizeof(data));
 }

@@ -5,14 +5,13 @@
 #include "ObjectDef.h"
 #include "mbed.h"
 /*
-La RobotCom est sur 24 bits
+La RobotCom est sur X bits
 On communique par I2C
 On a un MASTER (idéalement une raspberry PI que l'on nommera BRAIN)
 
 Trame 8*HEXAS: 
 |XX|XX|XX|
-| COMMANDS OBJECT | OBJECT_ID PROPERTY | DATA |
-
+| COMMANDS OBJECT | OBJECT_ID PROPERTY | DATA_LEN | X
 
 
 */
@@ -35,7 +34,7 @@ public:
     void encode(char *data, commands command, objects object, unsigned char object_id, unsigned char property, unsigned char data_to_send);
     void encode(char *data, unsigned char command);
     char compute_i2c_adress(products system_type, unsigned char system_id);
-    void read(char *data, int len, int address);
+    char read(char *data, int address);
 };
 
 

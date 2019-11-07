@@ -3,8 +3,16 @@
 
 
 
-#define NB_OCTET_TRAME 3
+#define NB_OCTET_HEADER 3
+#define MAX_DATA_LEN 4
 #define I2CFREQ 100000
+
+// for reserved objects see https://os.mbed.com/users/oliverb/notebook/i2c-address-list/
+enum products {
+    BRAIN_MACHINE,
+    ASSERV_MACHINE,
+    IO_MACHINE
+};
 
 
 enum commands {
@@ -17,12 +25,6 @@ enum commands {
 };
 
 
-// for reserved objects see https://os.mbed.com/users/oliverb/notebook/i2c-address-list/
-enum products {
-    BRAIN_MACHINE,
-    ASSERV_MACHINE,
-    IO_MACHINE
-};
 enum objects {
     NONE,
     DEVICE,
@@ -57,7 +59,8 @@ enum RF_PROPERTIES {
 
 enum ASSERV_PROPERTIES {
     ASSERV_NONE,
-    ASSERV_POSITION,
+    ASSERV_POSITION_X,
+    ASSERV_POSITION_Y,
     ASSERV_SPEED,
     ASSERV_COEFF_P,
     ASSERV_COEFF_I,
@@ -69,7 +72,8 @@ struct robot_com_frame {
     unsigned char object;
     unsigned char object_id;
     unsigned char property;
-    unsigned char data;
+    unsigned char data_len;
+    char data[MAX_DATA_LEN];
 };
 
 struct float_concat {

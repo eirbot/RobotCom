@@ -19,17 +19,15 @@ Trame 8*HEXAS:
 class RobotComSlave
 {
 private:
-    std::vector <char> buffer;
     std::vector <char> output_buffer;
     std::vector <robot_com_frame> decoded_data;
     products product_type;
     unsigned char product_id;
     int i2c_adress;
     void set_decoded_data(robot_com_frame frame);
-    char process_data_reception();
-    void retrive_complete_tram_from_buffer(char *data);
+    void process_data_reception(char *header);
     int get_all_data_from_output_buffer(char *data);
-    void decode(char *data);
+    robot_com_frame decode_header(char *data);
     I2CSlave slave;
 
 
@@ -42,6 +40,8 @@ public:
     char is_data_decoded_avaliable();
     robot_com_frame get_decoded_data();
     void prepare_to_send(const char *data, int data_len);
+    void prepare_to_send(int data);
+    void prepare_to_send(float data);
 };
 
 #endif

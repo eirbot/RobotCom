@@ -2,7 +2,7 @@
 #include "ObjectDef.h"
 #include "mbed.h"
 
-#define THEBRAIN
+// #define THEBRAIN
 
 #ifdef THEBRAIN
     #include "RobotCom.h"
@@ -26,7 +26,8 @@ int main() {
     while(1) {
         rcom.encode(data,READ,ANALOG,0,ANALOG_VALUE,ANALOG_NONE);
         rcom.send(data,NB_OCTET_TRAME,rcom.compute_i2c_adress(IO_MACHINE,0));
-        rcom.read(read_data,1,rcom.compute_i2c_adress(IO_MACHINE,0));
+        rcom.read(read_data,rcom.compute_i2c_adress(IO_MACHINE,0));
+
         pc.printf("Data recue : %d \n",read_data[0]);
         wait_ms(100);
         rcom.encode(data,WRITE,DIGITAL,0,DIGITAL_VALUE,1);
@@ -84,7 +85,7 @@ void write_processing(robot_com_frame recived_data){
         break;
     case DIGITAL:
 
-        led = recived_data.data;
+        led = recived_data.data[1];
         break;
     case ANALOG:
         
@@ -102,7 +103,7 @@ void write_processing(robot_com_frame recived_data){
 }
 
 void read_processing(robot_com_frame recived_data){
-    const char data = 246;
+    int data = 246;
     switch (recived_data.object)
     {
     case DEVICE:
@@ -112,7 +113,7 @@ void read_processing(robot_com_frame recived_data){
 
         break;
     case ANALOG:
-        rcom.prepare_to_send(&data, 1);
+        rcom.prepare_to_send(data);
         break;
     case RF:
     
